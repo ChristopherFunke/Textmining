@@ -17,34 +17,32 @@ public class Einlesen {
 				BufferedReader bR = new BufferedReader(fR);
 				String zeile = null;
 				while ((zeile = bR.readLine()) != null) {
-					System.out.println(zeile);
-//
-//					if (zeile.contains("<")) {
-//						continue;
-//					}
+//					System.out.println(zeile);
+
+
 					
-					String patternOpen = "^<(/?)([^/>a-z]+)>";
-					String patternClose = "<(//[^<]+)>";
+					String patternOpen = "<([^/>a-z]+)>";
+//					String patternClose = "</([^>]+)>";
 					
 					Pattern r = Pattern.compile(patternOpen);
-					Pattern r2 = Pattern.compile(patternClose);
+//					Pattern r2 = Pattern.compile(patternClose);
 					
 					Matcher m = r.matcher(zeile);
-					Matcher m2 = r2.matcher(zeile);
+//					Matcher m2 = r2.matcher(zeile);
 					
 					if(m.find()){
 						System.out.println("Found value " + m.group(1));
 						}
 					
-					if(m2.find()){
-						System.out.println("Found value"+ m2.group(0));
-					}
+//					if(m2.find()){
+//						System.out.println("Found value"+ m2.group(0));
+//					}
 						
 					
 				}
 				bR.close();
 			} catch (Exception ex) {
-				// ;
+				
 			}
 		} else {
 			System.out.println("Textdatei nicht gefunden!");
