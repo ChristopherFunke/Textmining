@@ -3,23 +3,25 @@ package einl.test;
 /**
  *
  * @author kai
- * 
  */
 public class tm {
     
     public static void main(String[] args) {
-        Einlesen sp = new Einlesen();
-        Work work = null;
+        ShakespeareParser sp = new ShakespeareParser();
+        AllWorks works = null;
         if (args.length==0) {
-            work = sp.readfile("C:\\Users\\Christopher\\Desktop\\TestOrdner\\ShakespearePlaysPlus\\TXT\\historical\\The First Part of King Henry IV.txt");
+            works = sp.readFiles("C:\\Users\\Christopher\\Desktop\\TestOrdner\\ShakespearePlaysPlus\\TXT");
         } else {
-            work = sp.readfile(args[0]);
+            works = sp.readFiles(args[0]);
         }
-        
-        for (String name: work.getSpeakers()) {
-            System.out.println(name + ": " + work.getNumberOfMonologuesBySpeaker(name) + " times, " + work.getWordsBySpeaker(name) + " words, " + work.getWordsBySpeaker(name)/work.getNumberOfMonologuesBySpeaker(name) + " words per monologue.");
-        }
-        
+            for (Speaker speaker: works.getAllSpeakers()) {
+                System.out.println(speaker.getName() + ": " + speaker.getNumberOfMonologues() + " times, " + speaker.getNumberOfWords() + " words, " + speaker.getNumberOfWords()/speaker.getNumberOfMonologues() + " words per monologue.");
+            }
+        	
+//        	for (Speaker speaker: works.getAllSpeakers()){
+//        		System.out.println(speaker.getName()+ ", says the word and: "+ speaker.getTimesOneWordIsSaid()+" times");
+//        	}
+//        
         
     }
     
