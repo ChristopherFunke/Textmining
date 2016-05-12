@@ -1,10 +1,13 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package einl.test;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -12,51 +15,73 @@ import java.util.Map;
  */
 public class Work {
     private List<Monologue> monologues = new ArrayList<>();
-    private Map<Speaker, List<Monologue>> bySpeaker = new HashMap<>();
+    private List<Speaker> speakers = new ArrayList<>();
+    private String filename;
+    private AllWorks allWorks;
     
-    public Work() {
+    public Work(AllWorks allWorks) {
+        this.allWorks = allWorks;
+        allWorks.add(this);
+    }
+
+    public AllWorks getAllWorks() {
+        return allWorks;
+    }
+    
+    
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+    
+    
+    
+    
+
+    public void sortSpeakersByMonologues() {
+        Collections.sort(speakers, 
+                (speaker1, speaker2) -> speaker1.getNumberOfMonologues() - speaker2.getNumberOfMonologues()
+        );
     }
     
     public List<Speaker> getSpeakers() {
-        List<Speaker> res = new ArrayList<>();
-        res.addAll(bySpeaker.keySet());
-        Collections.sort(res, 
-                (name1, name2) -> bySpeaker.get(name2).size() - bySpeaker.get(name1).size()
-        );
-        return res;
+        return speakers;
     }
     
-    public void add(Monologue m) {
-        monologues.add(m);
-        bySpeaker.putIfAbsent(m.getSpeaker(), new ArrayList<Monologue>());
-        bySpeaker.get(   m.getSpeaker()   )     .add(m);
-    }
-    
-    public int getWordsBySpeaker(Speaker speaker) {
-        int sum = 0;
-        for (Monologue m: bySpeaker.get(speaker)) {
-            sum += m.getText().split(" ").length;
+    public Speaker getOrCreateSpeaker(String name) {
+        for (Speaker s: speakers) {
+            if (s.getName().toLowerCase().equals(name.toLowerCase())) {
+                return s;
+            }
         }
-        return sum;
+        return new Speaker(name, this);
     }
     
-    public int getTimesOneWordIsSaid(Speaker speaker){
-    	int summe = 0;
-    	String word;
-    	for(Monologue m: bySpeaker.get(speaker)){
-    		word = m.getText().split(" ").toString();
-    		if(word=="and"){
-    			summe++;
-    		}
-    		
-    	}
-    	
-		return summe;
-    	
+    
+    public List<Monologue> getMonologues() {
+        return monologues;
     }
     
-    public int getNumberOfMonologuesBySpeaker(Speaker speaker) {
-        return bySpeaker.get(speaker).size();
+    
+    
+    
+    public String getAllText() {
+        StringBuilder res = new StringBuilder();
+        for (Monologue m: monologues) {
+            res.append(m.getText()).append(" ");
+        }
+        return res.toString();
     }
+
+    @Override
+    public String toString() {
+        return filename;
+    }
+    
+    
 
 }

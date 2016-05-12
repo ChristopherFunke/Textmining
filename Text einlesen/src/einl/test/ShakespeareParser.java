@@ -1,3 +1,8 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package einl.test;
 
 import java.io.BufferedReader;
@@ -19,12 +24,13 @@ import java.util.regex.Pattern;
  */
 public class ShakespeareParser {
 
-    public Work readFile(String filename) {
+    public Work readFile(String filename, AllWorks allWorks) {
 
         // Neue Strategie: Erst mal den gesamten Text in einen String einlesen, damit wir
         // zeilenübergreifend bereinigen können.
         String fulltext = "";
-        Work work = new Work();
+        Work work = new Work(allWorks);
+        work.setFilename(filename);
         Map<String, Speaker> speakers = new HashMap<>();
 
         // Google: java read text file line by line
@@ -48,8 +54,10 @@ public class ShakespeareParser {
         fulltext = m1.replaceAll("\t");
 
         // Ab hier wieder alte Strategie, zeilenweise Verarbeitung
-        List<String> path = new ArrayList<String>();
         StringBuffer tmp = new StringBuffer();
+        // Default Act, da teilweise Szenen vor dem ersten Akt existieren.
+        Act act = new Act(work, 0);
+        Scene scene = null;
         for (String line : fulltext.split("\n")) {
             // Google: java regular expression
             // 2. Treffer: http://www.tutorialspoint.com/java/java_regular_expressions.htm
@@ -67,27 +75,50 @@ public class ShakespeareParser {
                 // Und wie heißt es?
                 String tagname = m.group(2);
                 if (starttag) {
+                    // Textpuffer löschen.
+                    tmp.setLength(0);
                     // System.out.println("Start: " + tagname);
-                    path.add(tagname);
+                    if (tagname.startsWith("ACT ")) {
+                        // String ist "ACT 1" --> "ACT " löschen
+                        act = new Act(work, Integer.parseInt(tagname.replace("ACT ", "")));
+                        // actNr = Integer.parseInt(tagname.substring(tagname.indexOf(" ") + 1));
+                        // actNr = Integer.parseInt(tagname.substring("ACT ".length()));
+                        // actNr = Integer.parseInt(tagname.substring(4));
+                        // actNr = Integer.parseInt(tagname.substring(4));
+                        // actNr = Integer.parseInt(tagname.split(" ")[1]);
+                    }
+                    if (tagname.startsWith("SCENE ")) {
+                        try {
+                            int number = Integer.parseInt(tagname.replace("SCENE ", ""));
+                            scene = new Scene(act, number);
+                        } catch (NumberFormatException nfe) {
+                            // Wenn es keine Zahl ist, ist es keine Szene!
+                        }
+
+                    }
+
                     //System.out.println("You are here: " + path.toString());
 
-                    // Vielleicht etwas paranoid, aber haben wir wirklich das passende End-Tag?    
-                } else if (path.size() > 0 && tagname.equals(path.get(path.size() - 1))) {
+                    // Endtag
+                } else {
                     // System.out.println("End: " + tagname);
-                    Monologue mon = new Monologue();
-                    mon.setText(tmp.toString().trim());
-                    
-                    // Speaker verwalten und zuweisen
-                    speakers.putIfAbsent(tagname, new Speaker(tagname, work));
-                    mon.setSpeaker(speakers.get(tagname));
-                    
-                    mon.setPath(new ArrayList<String>(path));
-                    tmp.setLength(0);
-                    path.remove(path.size() - 1);
-                    if (mon.getText().length()>0) {
-                        work.add(mon);
+
+                    String text = tmp.toString().trim();
+                    if (text.length()==0) {
+                        continue;
                     }
-                    // System.out.println("You are here: " + path.toString());
+
+                    
+                    // Alles außerhalb einer Szene, wie z.B. Prologe werden ignoriert.
+                    if (scene==null) {
+                        tmp.setLength(0);
+                        continue;
+                    }
+                    
+                    Speaker speaker = work.getOrCreateSpeaker(tagname);
+
+                    Monologue mon = new Monologue(scene, speaker, text);
+                    tmp.setLength(0);
                 }
             } else {
                 // Wenn es kein Tag ist, schauen wir noch, ob die Zeile eingerückt ist, falls ja: Text
@@ -107,7 +138,7 @@ public class ShakespeareParser {
         File dir = new File(directory);
         for (File f: dir.listFiles()) {
             if (f.isFile() && f.getName().toLowerCase().endsWith(".txt")) {
-                res.add(readFile(f.getAbsolutePath()));
+                readFile(f.getAbsolutePath(), res);
             } else if (f.isDirectory() && !f.getName().toLowerCase().endsWith("_characters")) {
                 res.addAll(readFiles(f.getAbsolutePath()));
             }
