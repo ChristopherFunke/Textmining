@@ -2,6 +2,7 @@ package einl.test;
 
 import vectorspace.DocumentPair;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import vectorspace.VectorSpace;
@@ -28,21 +29,32 @@ public class tm {
         int minLength = 0;
         
         List<Speaker> speakers = works.getAllSpeakers();
-        List<String> texte = new ArrayList<>();
+
+        
         for(Speaker s: speakers){
         	String text = s.getAllText();
-        	String[] tokenizedText =nlp.tokenize(text);
+        	String[] sentences = nlp.splitSentence(text);
+        	
+        	for(String sentence : sentences){
+        		String[] tokens = nlp.tokenize(sentence);
+        		
+        		 List<String> tList = Arrays.asList(tokens);
+        		
+        		List<String> locations = nlp.findLocation(tList);
+        		
+        		for(String l: locations){
+        			System.out.println(l);
+        		}
+        		
+        		
+        	}
         	
         	
         	
         	
         }
         
-        List<String> orte = nlp.findLocation(texte);
-        
-        for(String s: orte){
-        	System.out.println(s);
-        }
+
         
         
         
